@@ -126,12 +126,13 @@ public class DictionaryTree {
     int heightOfTree(int height, int count, DictionaryTree tree) {
     	if (tree.children.isEmpty()) {
     		height = Math.max(height, count);
-    		count = 0;
 		}
     	else {
     		for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
     			DictionaryTree letterTree = entry.getValue();
-				count = 1 + heightOfTree(height, count, letterTree);
+    			++count;
+				height = heightOfTree(height, count, letterTree);
+				--count;
 			}
     	}
     	return height;
