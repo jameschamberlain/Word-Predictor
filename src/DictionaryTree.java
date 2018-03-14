@@ -31,7 +31,7 @@ public class DictionaryTree {
      * @param word The word to be inserted
      * @param tree The tree to operate on
      */
-    void insertWord(String word, DictionaryTree tree) {
+    private void insertWord(String word, DictionaryTree tree) {
     	if (!(word == null || word.equals(""))) {
     		Character letter = word.charAt(0);
     		DictionaryTree letterChildren;
@@ -112,7 +112,27 @@ public class DictionaryTree {
      * @return the maximum number of children held by any node in this tree
      */
     int maximumBranching() {
-        throw new RuntimeException("DictionaryTree.maximumBranching not implemented yet");
+        return maxBranch(0, this);
+    }
+
+
+    int maxBranch(int maxBranch, DictionaryTree tree) {
+        if (tree.children.isEmpty()) {
+            return 0;
+        }
+        else {
+
+            for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
+                DictionaryTree letterTree = entry.getValue();
+                int count = 0;
+                for (int i = 0; i < tree.children.size(); i++) {
+                    ++count;
+                }
+                maxBranch = Math.max(maxBranch, count);
+                maxBranch = Math.max(maxBranch, maxBranch(maxBranch, letterTree));
+            }
+        }
+        return maxBranch;
     }
 
     /**
@@ -121,8 +141,19 @@ public class DictionaryTree {
     int height() {
         return heightOfTree(0, 0, this);
     }
-    
-    
+
+
+    /**
+     *
+     * Helper method for height()
+     * Recursively goes to end of each subtree
+     * and keeps track of the height
+     *
+     * @param height Current height of tree
+     * @param count Current height of subtree
+     * @param tree The tree to operate on
+     * @return The height of the tree
+     */
     int heightOfTree(int height, int count, DictionaryTree tree) {
     	if (tree.children.isEmpty()) {
     		height = Math.max(height, count);
@@ -154,7 +185,7 @@ public class DictionaryTree {
      * 
      * @param count The running total of the number of nodes
      * @param tree The tree to operate on
-     * @return The 
+     * @return The size of the tree
      */
     int sizeOfTree(int count, DictionaryTree tree) {
     	if (!tree.children.isEmpty()) {

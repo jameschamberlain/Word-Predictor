@@ -34,7 +34,7 @@ public class CLI {
         //DictionaryTree d = loadWords(new File("word-popularity.txt"));
         DictionaryTree d = loadWords(new File("test.txt"));
         System.out.println("done");
-        System.out.println("Height of tree = " + d.height());
+        System.out.println("Max branch of tree = " + d.maximumBranching());
         System.out.println("Enter prefixes for prediction below.");
 
         try (BufferedReader fromUser = new BufferedReader(new InputStreamReader(System.in))) {
