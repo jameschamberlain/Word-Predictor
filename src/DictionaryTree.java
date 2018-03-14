@@ -1,8 +1,11 @@
 import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 public class DictionaryTree {
@@ -17,14 +20,28 @@ public class DictionaryTree {
      */
     void insert(String word) {
         insertWord(word, this);
-        System.out.println(children.keySet());
     }
     
+    
+    /**
+     * 
+     * Helper method for insert()
+     * Recursively adds the characters from the word to maps
+     * 
+     * @param word The word to be inserted
+     * @param tree The tree to operate on
+     */
     void insertWord(String word, DictionaryTree tree) {
     	if (!(word == null || word.equals(""))) {
     		Character letter = word.charAt(0);
-    		DictionaryTree letterChildren = new DictionaryTree();
-    		children.put(letter, letterChildren);
+    		DictionaryTree letterChildren;
+    		if (tree.children.containsKey(letter)) {
+				letterChildren = tree.children.get(letter);
+			}
+    		else {
+    			letterChildren = new DictionaryTree();
+    		}
+    		tree.children.put(letter, letterChildren);
     		insertWord(word.substring(1), letterChildren);
 		}
     }
@@ -102,14 +119,51 @@ public class DictionaryTree {
      * @return the height of this tree, i.e. the length of the longest branch
      */
     int height() {
-        throw new RuntimeException("DictionaryTree.height not implemented yet");
+        return heightOfTree(0, 0, this);
+    }
+    
+    
+    int heightOfTree(int height, int count, DictionaryTree tree) {
+    	if (tree.children.isEmpty()) {
+    		height = Math.max(height, count);
+    		count = 0;
+		}
+    	else {
+    		for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
+    			DictionaryTree letterTree = entry.getValue();
+				count = 1 + heightOfTree(height, count, letterTree);
+			}
+    	}
+    	return height;
     }
 
     /**
      * @return the number of nodes in this tree
      */
     int size() {
-        throw new RuntimeException("DictionaryTree.size not implemented yet");
+        return sizeOfTree(1, this);
+    }
+    
+    
+    /**
+     * 
+     * Helper method for size()
+     * Recursively counts the number of nodes
+     * at each level in each subtree
+     * 
+     * @param count The running total of the number of nodes
+     * @param tree The tree to operate on
+     * @return The 
+     */
+    int sizeOfTree(int count, DictionaryTree tree) {
+    	if (!tree.children.isEmpty()) {
+    		for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
+    			DictionaryTree letterTree = entry.getValue();
+				count = 1 + sizeOfTree(count, letterTree);
+			}
+		}
+    	
+    	return count;
     }
 
     /**

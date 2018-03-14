@@ -31,9 +31,10 @@ public class CLI {
 
     public static void main(String[] args) throws IOException {
         System.out.print("Loading dictionary ... ");
-        DictionaryTree d = loadWords(new File("word-popularity.txt"));
+        //DictionaryTree d = loadWords(new File("word-popularity.txt"));
+        DictionaryTree d = loadWords(new File("test.txt"));
         System.out.println("done");
-
+        System.out.println("Height of tree = " + d.height());
         System.out.println("Enter prefixes for prediction below.");
 
         try (BufferedReader fromUser = new BufferedReader(new InputStreamReader(System.in))) {
