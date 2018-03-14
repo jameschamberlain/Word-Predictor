@@ -16,7 +16,17 @@ public class DictionaryTree {
      * @param word the word to insert
      */
     void insert(String word) {
-        throw new RuntimeException("DictionaryTree.insert not implemented yet");
+        insertWord(word, this);
+        System.out.println(children.keySet());
+    }
+    
+    void insertWord(String word, DictionaryTree tree) {
+    	if (!(word == null || word.equals(""))) {
+    		Character letter = word.charAt(0);
+    		DictionaryTree letterChildren = new DictionaryTree();
+    		children.put(letter, letterChildren);
+    		insertWord(word.substring(1), letterChildren);
+		}
     }
 
     /**
