@@ -1,3 +1,4 @@
+import java.io.CharArrayReader;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -73,6 +74,19 @@ public class DictionaryTree {
     }
 
 
+    /**
+     *
+     * Helper method for remove()
+     * Recursively travels down the branches
+     * of the tree using the letters from the
+     * word, and if the nodes have no
+     * children then the node is deleted
+     *
+     * @param word The word to be removed
+     * @param cleanRemove Whether the word could be cleanly deleted
+     * @param tree The tree to operate on
+     * @return A boolean for whether the word was cleanly removed or not
+     */
     private boolean removeHelper(String word, boolean cleanRemove, DictionaryTree tree) {
         if (!(word == null || word.equals(""))) {
             Character c = word.charAt(0);
@@ -85,7 +99,7 @@ public class DictionaryTree {
                 if (word.length() == 1) {
                     tree.children.get(c).endOfWord = false;
                 }
-                cleanRemove = removeHelper(word.substring(1, word.length()), cleanRemove, tree.children.get(c));
+                cleanRemove = removeHelper(word.substring(1), cleanRemove, tree.children.get(c));
             }
         }
         return cleanRemove;
@@ -98,11 +112,24 @@ public class DictionaryTree {
      * @return true if the specified word is stored in this tree; false otherwise
      */
     boolean contains(String word) {
-        return containsHelper(word, false, "", this);
+        return containsHelper(word, false, "", this, false);
     }
 
 
-    private boolean containsHelper(String word, boolean isContained, String currentWord, DictionaryTree tree) {
+    /**
+     *
+     * Helper method for contains()
+     * Recursively traverses each node of the tree
+     * until a word is created that matches the
+     * selected word
+     *
+     * @param word The word to be checked
+     * @param isContained Whether the word has been found or not
+     * @param currentWord The current word
+     * @param tree The tree to operate on
+     * @return A boolean for whether the word was found or not
+     */
+    private boolean containsHelper(String word, boolean isContained, String currentWord, DictionaryTree tree, boolean prefix) {
         if (tree.children.isEmpty()) {
             return isContained;
         }
@@ -113,11 +140,16 @@ public class DictionaryTree {
                     break;
                 }
                 currentWord += entry.getKey();
-                if (currentWord.equals(word) && entry.getValue().endOfWord) {
-                    isContained = true;
+                if (currentWord.equals(word)) {
+                    if (prefix) {
+                        isContained = true;
+                    }
+                    else if (!prefix && entry.getValue().endOfWord) {
+                        isContained = true;
+                    }
                 }
                 else {
-                    isContained = containsHelper(word, false, currentWord, entry.getValue());
+                    isContained = containsHelper(word, false, currentWord, entry.getValue(), prefix);
                 }
                 currentWord = currentWord.substring(0, currentWord.length() - 1);
             }
@@ -131,7 +163,34 @@ public class DictionaryTree {
      * if no such word is found.
      */
     Optional<String> predict(String prefix) {
-        throw new RuntimeException("DictionaryTree.predict not implemented yet");
+        if (containsHelper(prefix, false, "", this, true)) {
+            return Optional.of(predictHelper(prefix, prefix, this));
+        }
+        else {
+            return Optional.empty();
+        }
+    }
+
+
+    String predictHelper(String prefix, String newWord, DictionaryTree tree) {
+        if (!(prefix == null || prefix.equals(""))) {
+            Character letter = prefix.charAt(0);
+            newWord = predictHelper(prefix.substring(1), newWord, tree.children.get(letter));
+        }
+        else {
+            if (tree.children.isEmpty()) {
+                return newWord;
+            }
+            else {
+                ArrayList<Character> letters = new ArrayList<>(tree.children.keySet());
+                Random r = new Random();
+                int index = r.nextInt(letters.size());
+                Character randomLetter = letters.get(index);
+                newWord += randomLetter;
+                newWord = predictHelper("", newWord, tree.children.get(randomLetter));
+            }
+        }
+        return newWord;
     }
 
     /**
@@ -285,7 +344,7 @@ public class DictionaryTree {
      * Helper method for longestWord()
      * Recursively traverses the tree creating
      * words and checking them against the
-     * current longest wordS
+     * current longest words
      *
      * @param longestWord The current longest word
      * @param currentWord THe current word
@@ -317,11 +376,22 @@ public class DictionaryTree {
      * @return all words stored in this tree as a list
      */
     List<String> allWords() {
-        ArrayList<String> words = new ArrayList<String>();
+        ArrayList<String> words = new ArrayList<>();
         return allWordsHelper(words, "", this);
     }
 
 
+    /**
+     *
+     * Helper method for allWords()
+     * Recursively traverses the tree adding
+     * words to a list
+     *
+     * @param words The list of words in the tree
+     * @param currentWord THe current word
+     * @param tree The tree to operate on
+     * @return The list of words in the tree
+     */
     private ArrayList<String> allWordsHelper(ArrayList<String> words, String currentWord, DictionaryTree tree) {
         if (tree.children.isEmpty()) {
             return words;
