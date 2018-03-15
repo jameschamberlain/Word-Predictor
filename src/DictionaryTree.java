@@ -69,7 +69,31 @@ public class DictionaryTree {
      * @return true if the specified word is stored in this tree; false otherwise
      */
     boolean contains(String word) {
-        throw new RuntimeException("DictionaryTree.contains not implemented yet");
+        return containsHelper(word, false, "", this);
+    }
+
+
+    private boolean containsHelper(String word, boolean isContained, String currentWord, DictionaryTree tree) {
+        if (tree.children.isEmpty()) {
+            return isContained;
+        }
+        else {
+
+            for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
+                if (isContained) {
+                    break;
+                }
+                currentWord += entry.getKey();
+                if (currentWord.equals(word)) {
+                    isContained = true;
+                }
+                else {
+                    isContained = containsHelper(word, false, currentWord, entry.getValue());
+                }
+                currentWord = currentWord.substring(0, currentWord.length() - 1);
+            }
+        }
+        return isContained;
     }
 
     /**
@@ -237,7 +261,7 @@ public class DictionaryTree {
      * @param longestWord The current longest word
      * @param currentWord THe current word
      * @param tree THe tree to operate on
-     * @return THe longest word in the tree
+     * @return The longest word in the tree
      */
     private String longestWordHelper(String longestWord, String currentWord, DictionaryTree tree) {
         if (tree.children.isEmpty()) {

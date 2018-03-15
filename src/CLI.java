@@ -31,10 +31,10 @@ public class CLI {
 
     public static void main(String[] args) throws IOException {
         System.out.print("Loading dictionary ... ");
-        //DictionaryTree d = loadWords(new File("word-popularity.txt"));
-        DictionaryTree d = loadWords(new File("test.txt"));
+        DictionaryTree d = loadWords(new File("word-popularity.txt"));
+        //DictionaryTree d = loadWords(new File("test.txt"));
         System.out.println("done");
-        System.out.println("Number of leaves = " + d.numLeaves());
+        System.out.println("Does tree contain 'étude's'? " + d.contains("étude's"));
         System.out.println("Enter prefixes for prediction below.");
 
         try (BufferedReader fromUser = new BufferedReader(new InputStreamReader(System.in))) {
