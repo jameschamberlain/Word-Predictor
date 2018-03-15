@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 /**
  * @author Kelsey McKenna
@@ -17,7 +18,7 @@ public class CLI {
      * @return the dictionary with the words loaded from the given file
      * @throws IOException if there was a problem opening/reading from the file
      */
-    static DictionaryTree loadWords(File f) throws IOException {
+    private static DictionaryTree loadWords(File f) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
             String word;
             DictionaryTree d = new DictionaryTree();
@@ -31,10 +32,11 @@ public class CLI {
 
     public static void main(String[] args) throws IOException {
         System.out.print("Loading dictionary ... ");
-        DictionaryTree d = loadWords(new File("word-popularity.txt"));
-        //DictionaryTree d = loadWords(new File("test.txt"));
+        //DictionaryTree d = loadWords(new File("word-popularity.txt"));
+        DictionaryTree d = loadWords(new File("test.txt"));
         System.out.println("done");
-        System.out.println("Does tree contain 'étude's'? " + d.contains("étude's"));
+        List<String> words = d.allWords();
+        System.out.println("All words: " + words);
         System.out.println("Enter prefixes for prediction below.");
 
         try (BufferedReader fromUser = new BufferedReader(new InputStreamReader(System.in))) {

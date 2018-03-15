@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 public class DictionaryTree {
 
     private Map<Character, DictionaryTree> children = new LinkedHashMap<>();
+    private boolean endOfWord = false;
 
     /**
      * Inserts the given word into this dictionary.
@@ -35,6 +36,10 @@ public class DictionaryTree {
             }
             tree.children.put(letter, letterChildren);
             insertHelper(word.substring(1), letterChildren);
+
+        }
+        else {
+            tree.endOfWord = true;
         }
     }
 
@@ -288,7 +293,27 @@ public class DictionaryTree {
      * @return all words stored in this tree as a list
      */
     List<String> allWords() {
-        throw new RuntimeException("DictionaryTree.allWords not implemented yet");
+        ArrayList<String> words = new ArrayList<String>();
+        return allWordsHelper(words, "", this);
+    }
+
+
+    private ArrayList<String> allWordsHelper(ArrayList<String> words, String currentWord, DictionaryTree tree) {
+        if (tree.children.isEmpty()) {
+            return words;
+        }
+        else {
+
+            for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
+                currentWord += entry.getKey();
+                if (entry.getValue().endOfWord) {
+                    words.add(currentWord);
+                }
+                words = allWordsHelper(words, currentWord, entry.getValue());
+                currentWord = currentWord.substring(0, currentWord.length() - 1);
+            }
+        }
+        return words;
     }
 
     /**
