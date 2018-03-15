@@ -64,7 +64,31 @@ public class DictionaryTree {
      * @return whether or not the parent can delete this node from its children
      */
     boolean remove(String word) {
-        throw new RuntimeException("DictionaryTree.remove not implemented yet");
+        if (contains(word)) {
+            return removeHelper(word, false, this);
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    private boolean removeHelper(String word, boolean cleanRemove, DictionaryTree tree) {
+        if (!(word == null || word.equals(""))) {
+            Character c = word.charAt(0);
+            if (tree.children.get(c).children.isEmpty()) {
+                tree.children.remove(c);
+                cleanRemove = true;
+            }
+            else {
+                cleanRemove = false;
+                if (word.length() == 1) {
+                    tree.children.get(c).endOfWord = false;
+                }
+                cleanRemove = removeHelper(word.substring(1, word.length()), cleanRemove, tree.children.get(c));
+            }
+        }
+        return cleanRemove;
     }
 
     /**
@@ -89,7 +113,7 @@ public class DictionaryTree {
                     break;
                 }
                 currentWord += entry.getKey();
-                if (currentWord.equals(word)) {
+                if (currentWord.equals(word) && entry.getValue().endOfWord) {
                     isContained = true;
                 }
                 else {

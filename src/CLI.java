@@ -37,6 +37,10 @@ public class CLI {
         System.out.println("done");
         List<String> words = d.allWords();
         System.out.println("All words: " + words);
+        System.out.println("'on' deletted? " + d.remove("ones"));
+        List<String> words2 = d.allWords();
+        System.out.println("All words: " + words2);
+        System.out.println(d.contains("on"));
         System.out.println("Enter prefixes for prediction below.");
 
         try (BufferedReader fromUser = new BufferedReader(new InputStreamReader(System.in))) {
