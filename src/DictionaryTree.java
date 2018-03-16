@@ -100,7 +100,7 @@ public class DictionaryTree {
             Character c = word.charAt(0);
             if (tree.children.get(c).children.isEmpty()) {
                 tree.children.remove(c);
-                cleanRemove = true;
+                	cleanRemove = true;
             }
             else {
                 cleanRemove = false;
@@ -388,7 +388,6 @@ public class DictionaryTree {
     List<String> allWords() {
         LinkedHashMap<String, Integer> words = new LinkedHashMap<>();
         words = allWordsHelper(words, "", this);
-        System.out.println(words);
         return new ArrayList<>(words.keySet());
     }
 
