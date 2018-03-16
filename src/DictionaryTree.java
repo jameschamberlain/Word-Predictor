@@ -1,11 +1,14 @@
 import java.io.CharArrayReader;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public class DictionaryTree {
 
     private Map<Character, DictionaryTree> children = new LinkedHashMap<>();
     private boolean endOfWord = false;
+    private static int overallPopularity = 1;
+    private int popularity;
 
     /**
      * Inserts the given word into this dictionary.
@@ -14,7 +17,8 @@ public class DictionaryTree {
      * @param word the word to insert
      */
     void insert(String word) {
-        insertHelper(word, this);
+        insertHelper(word, overallPopularity, this);
+        ++overallPopularity;
     }
 
 
@@ -25,7 +29,7 @@ public class DictionaryTree {
      * @param word The word to be inserted
      * @param tree The tree to operate on
      */
-    private void insertHelper(String word, DictionaryTree tree) {
+    private void insertHelper(String word, int newPopularity, DictionaryTree tree) {
         if (!(word == null || word.equals(""))) {
             Character letter = word.charAt(0);
             DictionaryTree letterChildren;
@@ -36,11 +40,13 @@ public class DictionaryTree {
                 letterChildren = new DictionaryTree();
             }
             tree.children.put(letter, letterChildren);
-            insertHelper(word.substring(1), letterChildren);
+            insertHelper(word.substring(1), newPopularity, letterChildren);
 
         }
         else {
             tree.endOfWord = true;
+            tree.popularity = newPopularity;
+
         }
     }
 
@@ -52,7 +58,7 @@ public class DictionaryTree {
      * @param popularity the popularity of the inserted word
      */
     void insert(String word, int popularity) {
-        throw new RuntimeException("DictionaryTree.insert not implemented yet");
+        insertHelper(word, popularity, this);
     }
 
     /**
@@ -164,7 +170,8 @@ public class DictionaryTree {
      */
     Optional<String> predict(String prefix) {
         if (containsHelper(prefix, false, "", this, true)) {
-            return Optional.of(predictHelper(prefix, prefix, this));
+            ArrayList<String> words = new ArrayList<>();
+            return Optional.of((predictHelper(prefix, prefix, words, 1, this)).get(0));
         }
         else {
             return Optional.empty();
@@ -172,25 +179,38 @@ public class DictionaryTree {
     }
 
 
-    String predictHelper(String prefix, String newWord, DictionaryTree tree) {
+    private ArrayList<String> predictHelper(String prefix, String newWord, ArrayList<String> words, int numOfWOrds, DictionaryTree tree) {
         if (!(prefix == null || prefix.equals(""))) {
             Character letter = prefix.charAt(0);
-            newWord = predictHelper(prefix.substring(1), newWord, tree.children.get(letter));
+            predictHelper(prefix.substring(1), newWord, words, numOfWOrds, tree.children.get(letter));
         }
         else {
-            if (tree.children.isEmpty()) {
-                return newWord;
+            LinkedHashMap<String, Integer> wordsUnsorted = new LinkedHashMap<>();
+            wordsUnsorted = allWordsHelper(wordsUnsorted, newWord, tree);
+            TreeMap<Integer, String> wordsSorted = new TreeMap<>();
+            for (String word : wordsUnsorted.keySet()) {
+                wordsSorted.put(wordsUnsorted.get(word), word);
             }
-            else {
-                ArrayList<Character> letters = new ArrayList<>(tree.children.keySet());
-                Random r = new Random();
-                int index = r.nextInt(letters.size());
-                Character randomLetter = letters.get(index);
-                newWord += randomLetter;
-                newWord = predictHelper("", newWord, tree.children.get(randomLetter));
+            //wordsMap = sortWords(allWordsHelper(wordsMap, newWord, tree));
+            for (int i = 0; i < numOfWOrds; i++) {
+                words.add(wordsSorted.firstEntry().getValue());
+                wordsSorted.remove(wordsSorted.firstEntry().getKey());
             }
+
+//            if (tree.children.isEmpty()) {
+//                words.add(newWord);
+//                return newWord;
+//            }
+//            else {
+//                ArrayList<Character> letters = new ArrayList<>(tree.children.keySet());
+//                Random r = new Random();
+//                int index = r.nextInt(letters.size());
+//                Character randomLetter = letters.get(index);
+//                newWord += randomLetter;
+//                newWord = predictHelper("", newWord, tree.children.get(randomLetter));
+//            }
         }
-        return newWord;
+        return words;
     }
 
     /**
@@ -201,7 +221,8 @@ public class DictionaryTree {
      * @return the (at most) n most popular words with the specified prefix
      */
     List<String> predict(String prefix, int n) {
-        throw new RuntimeException("DictionaryTree.predict not implemented yet");
+        ArrayList<String> words = new ArrayList<>();
+        return predictHelper(prefix, prefix, words, n, this);
     }
 
     /**
@@ -376,8 +397,10 @@ public class DictionaryTree {
      * @return all words stored in this tree as a list
      */
     List<String> allWords() {
-        ArrayList<String> words = new ArrayList<>();
-        return allWordsHelper(words, "", this);
+        LinkedHashMap<String, Integer> words = new LinkedHashMap<>();
+        words = allWordsHelper(words, "", this);
+        System.out.println(words);
+        return new ArrayList<>(words.keySet());
     }
 
 
@@ -392,7 +415,7 @@ public class DictionaryTree {
      * @param tree The tree to operate on
      * @return The list of words in the tree
      */
-    private ArrayList<String> allWordsHelper(ArrayList<String> words, String currentWord, DictionaryTree tree) {
+    private LinkedHashMap<String, Integer> allWordsHelper(LinkedHashMap<String, Integer> words, String currentWord, DictionaryTree tree) {
         if (tree.children.isEmpty()) {
             return words;
         }
@@ -401,7 +424,7 @@ public class DictionaryTree {
             for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
                 currentWord += entry.getKey();
                 if (entry.getValue().endOfWord) {
-                    words.add(currentWord);
+                    words.put(currentWord, entry.getValue().popularity);
                 }
                 words = allWordsHelper(words, currentWord, entry.getValue());
                 currentWord = currentWord.substring(0, currentWord.length() - 1);
@@ -422,6 +445,31 @@ public class DictionaryTree {
      */
     <A> A fold(BiFunction<DictionaryTree, Collection<A>, A> f) {
         throw new RuntimeException("DictionaryTree.fold not implemented yet");
+    }
+
+
+    /**
+     * Sorts a LinkedHashMap in ascending order of its values
+     *
+     * @param newHashMap A LinkedHashMap
+     * @return The sorted LinkedHashMap
+     */
+    private static LinkedHashMap<String, Integer> sortWords(HashMap newHashMap) {
+        List list = new LinkedList<String>(newHashMap.entrySet());
+        Collections.sort(list, new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry) (o1)).getValue()).compareTo(((Map.Entry) (o2)).getValue());
+            }
+        });
+
+        LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap<>();
+        for (Iterator it = list.iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String s = (String) entry.getKey();
+            Integer i = (Integer) entry.getValue();
+            sortedMap.put(s, i);
+        }
+        return sortedMap;
     }
 
 
