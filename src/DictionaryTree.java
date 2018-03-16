@@ -30,7 +30,8 @@ public class DictionaryTree {
      * @param tree The tree to operate on
      */
     private void insertHelper(String word, int newPopularity, DictionaryTree tree) {
-        if (!(word == null || word.equals(""))) {
+        Optional<String> wordNew = Optional.of(word);
+        if (!(word.equals(""))) {
             Character letter = word.charAt(0);
             DictionaryTree letterChildren;
             if (tree.children.containsKey(letter)) {
@@ -94,7 +95,8 @@ public class DictionaryTree {
      * @return A boolean for whether the word was cleanly removed or not
      */
     private boolean removeHelper(String word, boolean cleanRemove, DictionaryTree tree) {
-        if (!(word == null || word.equals(""))) {
+        Optional<String> wordNew = Optional.of(word);
+        if (!(word.equals(""))) {
             Character c = word.charAt(0);
             if (tree.children.get(c).children.isEmpty()) {
                 tree.children.remove(c);
@@ -180,7 +182,8 @@ public class DictionaryTree {
 
 
     private ArrayList<String> predictHelper(String prefix, String newWord, ArrayList<String> words, int numOfWOrds, DictionaryTree tree) {
-        if (!(prefix == null || prefix.equals(""))) {
+        Optional<String> prefixNew = Optional.of(prefix);
+        if (!(prefix.equals(""))) {
             Character letter = prefix.charAt(0);
             predictHelper(prefix.substring(1), newWord, words, numOfWOrds, tree.children.get(letter));
         }
@@ -191,24 +194,10 @@ public class DictionaryTree {
             for (String word : wordsUnsorted.keySet()) {
                 wordsSorted.put(wordsUnsorted.get(word), word);
             }
-            //wordsMap = sortWords(allWordsHelper(wordsMap, newWord, tree));
             for (int i = 0; i < numOfWOrds; i++) {
                 words.add(wordsSorted.firstEntry().getValue());
                 wordsSorted.remove(wordsSorted.firstEntry().getKey());
             }
-
-//            if (tree.children.isEmpty()) {
-//                words.add(newWord);
-//                return newWord;
-//            }
-//            else {
-//                ArrayList<Character> letters = new ArrayList<>(tree.children.keySet());
-//                Random r = new Random();
-//                int index = r.nextInt(letters.size());
-//                Character randomLetter = letters.get(index);
-//                newWord += randomLetter;
-//                newWord = predictHelper("", newWord, tree.children.get(randomLetter));
-//            }
         }
         return words;
     }
@@ -420,7 +409,9 @@ public class DictionaryTree {
             return words;
         }
         else {
-
+            if (tree.endOfWord) {
+                words.put(currentWord, tree.popularity);
+            }
             for (Map.Entry<Character, DictionaryTree> entry : tree.children.entrySet()) {
                 currentWord += entry.getKey();
                 if (entry.getValue().endOfWord) {
@@ -446,31 +437,5 @@ public class DictionaryTree {
     <A> A fold(BiFunction<DictionaryTree, Collection<A>, A> f) {
         throw new RuntimeException("DictionaryTree.fold not implemented yet");
     }
-
-
-    /**
-     * Sorts a LinkedHashMap in ascending order of its values
-     *
-     * @param newHashMap A LinkedHashMap
-     * @return The sorted LinkedHashMap
-     */
-    private static LinkedHashMap<String, Integer> sortWords(HashMap newHashMap) {
-        List list = new LinkedList<String>(newHashMap.entrySet());
-        Collections.sort(list, new Comparator<Object>() {
-            public int compare(Object o1, Object o2) {
-                return ((Comparable) ((Map.Entry) (o1)).getValue()).compareTo(((Map.Entry) (o2)).getValue());
-            }
-        });
-
-        LinkedHashMap<String, Integer> sortedMap = new LinkedHashMap<>();
-        for (Iterator it = list.iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String s = (String) entry.getKey();
-            Integer i = (Integer) entry.getValue();
-            sortedMap.put(s, i);
-        }
-        return sortedMap;
-    }
-
 
 }
